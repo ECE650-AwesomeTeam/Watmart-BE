@@ -55,7 +55,8 @@ class User(models.Model):
 class Password(models.Model):
     user = models.ForeignKey(
         'User',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        primary_key=True
     )
     # 128-bit = 32-hex
     md5_pwd = models.CharField(
