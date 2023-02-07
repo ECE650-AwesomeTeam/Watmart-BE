@@ -12,27 +12,34 @@ def signup(request):
     birthday = request.POST.get('birthday')
     password = request.POST.get('password')
     gender = request.POST.get('gender')
-    major = request.POST.get('major')
+    wat_id = request.POST.get('watcard_id')
     occ = request.POST.get('occupation')
     phone = request.POST.get('phone')
 
-    create_user(name, email, birthday, password, gender, major, occ, phone)
-    return HttpResponse('User profile created successfully!')
+    if create_user(name, email, birthday, password, gender, wat_id, occ, phone):
+        return HttpResponse('User profile created successfully!')
+    else:
+        return HttpResponse('Failed')
 
 
-def create_user(name, email, birthday, password, gender=None, major=None, occ=None, phone=None):
-    user = User()
-    user.name = name
-    user.email = email
-    user.birthday = birthday
-    user.gender = gender
-    user.major = major
-    user.occupation = occ
-    user.phone = phone
-    user.save()
+def create_user(name, email, birthday, password, gender, wat_id, occ, phone):
+    if all([name, email, birthday, password]):
+        user = User()
+        user.name = name
+        user.email = email
+        user.birthday = birthday
+        user.gender = gender
+        user.wat_id = wat_id
+        user.occupation = occ
+        user.phone = phone
+        user.save()
 
-    pwd = Password()
-    pwd.user = user
-    pwd.md5_pwd = password
-    pwd.save()
+        pwd = Password()
+        pwd.user = user
+        pwd.md5_pwd = password
+        pwd.save()
+
+        return 1
+    else:
+        return 0
 
