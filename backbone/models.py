@@ -13,9 +13,6 @@ class User(models.Model):
         (OTHER, 'Other'),
     ]
 
-    # Enum for Major
-    # TODO
-
     # Enum for Occupation
     STUDENT = 'STU'
     FACULTY = 'FAC'
@@ -25,35 +22,39 @@ class User(models.Model):
     ]
 
     # Attributes
+    email = models.EmailField(
+        unique=True,
+        primary_key=True
+    )
     name = models.CharField(
         max_length=16
     )
-    email = models.EmailField()
-    birthday = models.DateField(
-        blank=True,
-        null=True
-    )
+    birthday = models.DateField()
     gender = models.CharField(
         max_length=1,
         choices=GENDER_CHOICES,
-        default=OTHER
+        blank=True,
+        null=True
     )
-    major = models.CharField(
-        max_length=16,
-        default=''
+    wat_id = models.CharField(
+        max_length=8,
+        blank=True,
+        null=True
     )
     occupation = models.CharField(
         max_length=3,
         choices=OCCUPATION_CHOICES,
-        default=STUDENT
+        blank=True,
+        null=True
     )
     phone = models.CharField(
         max_length=10,
-        default=''
+        blank=True,
+        null=True
     )
 
 class Password(models.Model):
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         'User',
         on_delete=models.CASCADE,
         primary_key=True
