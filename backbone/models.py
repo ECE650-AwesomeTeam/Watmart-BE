@@ -26,7 +26,10 @@ class User(models.Model):
         unique=True,
         primary_key=True
     )
-    name = models.CharField(
+    fname = models.CharField(
+        max_length=16
+    )
+    lname = models.CharField(
         max_length=16
     )
     birthday = models.DateField()
