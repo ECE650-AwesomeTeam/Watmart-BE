@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from backbone.models import User
 from backbone.models import Password
 
+
 # Create your views here.
 @csrf_exempt
 def signup(request):
@@ -20,6 +21,16 @@ def signup(request):
         return HttpResponse('User profile created successfully!')
     else:
         return HttpResponse('Failed')
+
+
+def login(request):
+    email = request.POST.get('email')
+    password = request.POST.get('password')
+    userlist = Password.objects.filter(user_id=email, md5_pwd=password)
+    if userlist:
+        return HttpResponse('Log in successfully!')
+    else:
+        return HttpResponse('User does not exist or the password does not match')
 
 
 def create_user(name, email, birthday, password, gender, wat_id, occ, phone):
@@ -42,4 +53,3 @@ def create_user(name, email, birthday, password, gender, wat_id, occ, phone):
         return 1
     else:
         return 0
-
