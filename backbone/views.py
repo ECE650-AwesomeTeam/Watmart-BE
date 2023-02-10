@@ -7,25 +7,27 @@ from backbone.models import Password
 # Create your views here.
 @csrf_exempt
 def signup(request):
-    name = request.POST.get('name')
+    fname = request.POST.get('firstName')
+    lname = request.POST.get('lastName')
     email = request.POST.get('email')
     birthday = request.POST.get('birthday')
     password = request.POST.get('password')
     gender = request.POST.get('gender')
-    wat_id = request.POST.get('watcard_id')
+    wat_id = request.POST.get('watcardID')
     occ = request.POST.get('occupation')
     phone = request.POST.get('phone')
 
-    if create_user(name, email, birthday, password, gender, wat_id, occ, phone):
+    if create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
         return HttpResponse('User profile created successfully!')
     else:
         return HttpResponse('Failed')
 
 
-def create_user(name, email, birthday, password, gender, wat_id, occ, phone):
-    if all([name, email, birthday, password]):
+def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
+    if all([fname, lname, email, birthday, password]):
         user = User()
-        user.name = name
+        user.fname = fname
+        user.lname = lname
         user.email = email
         user.birthday = birthday
         user.gender = gender
