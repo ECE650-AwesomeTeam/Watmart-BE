@@ -1,5 +1,9 @@
+# config
+.env
+
 # Itell
 .idea
 
 # misc
 .DS_Stores
+__pycache__
