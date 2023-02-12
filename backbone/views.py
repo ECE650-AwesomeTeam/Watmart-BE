@@ -5,7 +5,7 @@ from backbone.models import User
 from backbone.models import Password
 import json
 
-# Create your views here.
+
 @csrf_exempt
 def signup(request):
     if request.method == 'POST':
@@ -25,7 +25,8 @@ def signup(request):
             'status': None
         }
 
-        status = create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone)
+        status = create_user(fname, lname, email, birthday, password,
+                             gender, wat_id, occ, phone)
         if status == 1:
             respose['msg'] = 'User created successfully!'
             respose['status'] = 200000
@@ -40,6 +41,13 @@ def signup(request):
 
 
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
+    """Create a user entity in the database.
+
+    Returns:
+        1: create successfully
+        0: mandatory fields are empty
+        -1: pk exists
+    """
     if all([fname, lname, email, birthday, password]):
         if (User.objects.filter(email=email)):
             return -1
