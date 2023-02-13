@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
+from django.http import HttpResponseServerError
+from django.http import HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 from backbone.models import User
 from backbone.models import Password
@@ -22,22 +24,20 @@ def signup(request):
 
         respose = {
             'msg': None,
-            'status': None
         }
 
         status = create_user(fname, lname, email, birthday, password,
                              gender, wat_id, occ, phone)
         if status == 1:
             respose['msg'] = 'User created successfully!'
-            respose['status'] = 200000
+            return HttpResponse(json.dumps(respose))
         elif status == -1:
             respose['msg'] = 'Current email has already been registered.'
-            respose['status'] = 100001
+            return HttpResponseServerError(json.dumps(respose))
         else:
             respose['msg'] = 'Failed'
-            respose['status'] = 100002
-        
-        return HttpResponse(json.dumps(respose))
+            return HttpResponseServerError(json.dumps(respose))
+    return HttpResponseNotAllowed(['POST'])
 
 
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
