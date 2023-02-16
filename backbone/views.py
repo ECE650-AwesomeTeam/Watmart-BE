@@ -1,30 +1,56 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
+from django.http import HttpResponseServerError
+from django.http import HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 from backbone.models import User
 from backbone.models import Password
+import json
 
-# Create your views here.
+
 @csrf_exempt
 def signup(request):
-    fname = request.POST.get('firstName')
-    lname = request.POST.get('lastName')
-    email = request.POST.get('email')
-    birthday = request.POST.get('birthday')
-    password = request.POST.get('password')
-    gender = request.POST.get('gender')
-    wat_id = request.POST.get('watcardID')
-    occ = request.POST.get('occupation')
-    phone = request.POST.get('phone')
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        fname = data['firstName']
+        lname = data['lastName']
+        email = data['email']
+        birthday = data['birthday']
+        password = data['password']
+        gender = data['gender']
+        wat_id = data['watcardID']
+        occ = data['occupation']
+        phone = data['phone']
 
-    if create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
-        return HttpResponse('User profile created successfully!')
-    else:
-        return HttpResponse('Failed')
+        respose = {
+            'msg': None,
+        }
+
+        status = create_user(fname, lname, email, birthday, password,
+                             gender, wat_id, occ, phone)
+        if status == 1:
+            respose['msg'] = 'User created successfully!'
+            return HttpResponse(json.dumps(respose))
+        elif status == -1:
+            respose['msg'] = 'Current email has already been registered.'
+            return HttpResponseServerError(json.dumps(respose))
+        else:
+            respose['msg'] = 'Failed'
+            return HttpResponseServerError(json.dumps(respose))
+    return HttpResponseNotAllowed(['POST'])
 
 
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
+    """Create a user entity in the database.
+
+    Returns:
+        1: create successfully
+        0: mandatory fields are empty
+        -1: pk exists
+    """
     if all([fname, lname, email, birthday, password]):
+        if (User.objects.filter(email=email)):
+            return -1
         user = User()
         user.fname = fname
         user.lname = lname
