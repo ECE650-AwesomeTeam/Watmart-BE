@@ -16,8 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from backbone import views
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('signup', views.signup)
+    path('signup', views.signup),
+    path('login', views.login),
+    path('auth', obtain_auth_token)
 ]

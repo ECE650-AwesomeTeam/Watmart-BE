@@ -71,3 +71,21 @@ def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, ph
     else:
         return 0
 
+
+def login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data['email']
+        password = data['password']
+        verify = Password.objects.filter(user_id=email, md5_pwd=password)
+        respose = {
+            'msg': None,
+        }
+        if verify:
+            respose['msg'] = 'Log in successfully!'
+            return HttpResponse(json.dumps(respose))
+        else:
+            respose['msg'] = 'User does not exist or the password does not match'
+            return HttpResponseServerError(json.dumps(respose))
+    return HttpResponseNotAllowed(['POST'])
+
