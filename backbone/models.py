@@ -1,4 +1,6 @@
 from django.db import models
+from django.conf import settings
+import os
 
 # Create your models here.
 
@@ -65,4 +67,78 @@ class Password(models.Model):
     # 128-bit = 32-hex
     md5_pwd = models.CharField(
         max_length=32
+    )
+
+
+class Product(models.Model):
+    # Enum for status
+    AVAILABLE = 'A'
+    SOLD = 'S'
+    STATUS_CHOICES = [
+        (AVAILABLE, 'Available'),
+        (SOLD, 'Sold'),
+    ]
+
+    # Enum for category
+    ELECTRONICS = 'ELEC'
+    FURNITURE = 'FURN'
+    CLOTHING = 'CLOT'
+    BOOKS = 'BOOK'
+    SPORTS = 'SPOR'
+    COLLECTIONS = 'COLL'
+    INSTRUMENTS = 'INTR'
+    ACCESSORIES = 'ACCE'
+    APPLIANCES = 'APPL'
+    CATEGORY_CHOICES = [
+        (ELECTRONICS, 'Electronics'),
+        (FURNITURE, 'Furniture'),
+        (CLOTHING, 'Clothing'),
+        (BOOKS, 'Books'),
+        (SPORTS, 'Sports'),
+        (COLLECTIONS, 'Collections'),
+        (INSTRUMENTS, 'Music Instruments'),
+        (ACCESSORIES, 'Accessories'),
+        (ACCESSORIES, 'Home Appliances'),
+    ]
+
+    id = models.AutoField(
+        primary_key=True
+    )
+    user = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE
+    )
+    time = models.DateTimeField(
+        auto_now=True
+    )
+    price = models.FloatField()
+    status = models.CharField(
+        max_length=1,
+        choices=STATUS_CHOICES
+    )
+    title = models.CharField(
+        max_length=100
+    )
+    content = models.CharField(
+        max_length=1000
+    )
+    category = models.CharField(
+        max_length=4,
+        choices=CATEGORY_CHOICES
+    )
+
+
+def get_url(instance, filename):
+    return os.path.join(str(instance.product.id), filename)
+
+class Image(models.Model):
+    id = models.AutoField(
+        primary_key=True
+    )
+    product = models.ForeignKey(
+        'Product',
+        on_delete=models.CASCADE
+    )
+    file = models.ImageField(
+        upload_to = get_url,
     )
