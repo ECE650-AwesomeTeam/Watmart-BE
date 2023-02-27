@@ -1,6 +1,9 @@
 # config
 .env
 
+# media
+media/
+
 # Itell
 .idea
 
