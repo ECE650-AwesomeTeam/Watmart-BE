@@ -50,6 +50,7 @@ def login(request):
             return HttpResponse('User does not exist or the password does not match')
     return HttpResponseNotAllowed(['POST'])
 
+
 @csrf_exempt
 def create_post(request):
     if request.method == 'POST':
@@ -163,5 +164,3 @@ def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, ph
         return 1
     else:
         return 0
-
-
