@@ -38,6 +38,19 @@ def signup(request):
     return HttpResponseNotAllowed(['POST'])
 
 
+def login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data['email']
+        password = data['password']
+        verify = Password.objects.filter(user_id=email, md5_pwd=password)
+        if verify:
+            return HttpResponse('Log in successfully!')
+        else:
+            return HttpResponse('User does not exist or the password does not match')
+    return HttpResponseNotAllowed(['POST'])
+
+
 @csrf_exempt
 def create_post(request):
     if request.method == 'POST':
@@ -54,23 +67,23 @@ def create_post(request):
             return HttpResponseServerError('User does not exist.')
         user = user[0]
         product = Product(
-            user = user,
-            price = price,
-            title = title,
-            content = content,
-            status = 'Available',
-            category = category
+            user=user,
+            price=price,
+            title=title,
+            content=content,
+            status='Available',
+            category=category
         )
         product.save()
 
         for f in files:
             image = Image(
-                product = product,
-                file = f
+                product=product,
+                file=f
             )
             image.save()
         return HttpResponse(product.id)
-        
+
     return HttpResponseNotAllowed(['POST'])
 
 
@@ -110,13 +123,13 @@ def update_post(request, product_id):
             shutil.rmtree(os.path.join(settings.MEDIA_ROOT, product_id), ignore_errors=True)
             for f in files:
                 image = Image(
-                    product = product,
-                    file = f
+                    product=product,
+                    file=f
                 )
                 image.save()
             return HttpResponse(product.id)
     else:
-        return HttpResponseNotAllowed(['POST', 'DELETE'])    
+        return HttpResponseNotAllowed(['POST', 'DELETE'])
 
 
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
@@ -131,24 +144,23 @@ def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, ph
         if (User.objects.filter(email=email)):
             return -1
         user = User(
-            fname = fname,
-            lname = lname,
-            email = email,
-            birthday = birthday,
-            gender = gender,
-            wat_id = wat_id,
-            occupation = occ,
-            phone = phone
+            fname=fname,
+            lname=lname,
+            email=email,
+            birthday=birthday,
+            gender=gender,
+            wat_id=wat_id,
+            occupation=occ,
+            phone=phone
         )
         user.save()
 
         pwd = Password(
-            user = user,
-            md5_pwd = password
+            user=user,
+            md5_pwd=password
         )
         pwd.save()
 
         return 1
     else:
         return 0
-
