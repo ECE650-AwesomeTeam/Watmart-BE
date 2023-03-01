@@ -22,6 +22,7 @@ from backbone import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup', views.signup),
+    path('login', views.login),
     path('post', views.create_post),
     path('post/<product_id>', views.update_post)
 ]
