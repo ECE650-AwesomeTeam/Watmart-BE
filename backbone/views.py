@@ -38,6 +38,7 @@ def signup(request):
     return HttpResponseNotAllowed(['POST'])
 
 
+@csrf_exempt
 def login(request):
     if request.method == 'POST':
         data = json.loads(request.body)
