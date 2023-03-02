@@ -68,6 +68,10 @@ class Password(models.Model):
     md5_pwd = models.CharField(
         max_length=32
     )
+    token = models.FileField(
+        max_length=255,
+        null=True
+    )
 
 
 class Product(models.Model):
