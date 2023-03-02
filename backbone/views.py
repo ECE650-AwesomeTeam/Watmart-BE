@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
-from django.http import HttpResponseServerError
+from django.http import HttpResponseServerError, JsonResponse
 from django.http import HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -11,6 +11,7 @@ from backbone.models import Image
 import json
 import shutil
 import os
+import jwt
 
 
 @csrf_exempt
@@ -46,7 +47,12 @@ def login(request):
         password = data['password']
         verify = Password.objects.filter(user_id=email, md5_pwd=password)
         if verify:
-            return HttpResponse('Log in successfully!')
+            a = Password.objects.get(user_id=email)
+            b = {'email': email, 'password': password}
+            token = jwt.encode(b, 'secret', algorithm='HS256')
+            a.token = token
+            a.save()
+            return JsonResponse({'msg': 'Log in successfully', 'token': token})
         else:
             return HttpResponse('User does not exist or the password does not match')
     return HttpResponseNotAllowed(['POST'])
