@@ -1,8 +1,4 @@
 from django.test import TestCase
-<<<<<<< HEAD
-
-# Create your tests here.
-=======
 from backbone.models import User
 from backbone.models import Password
 from backbone.models import Product
@@ -98,4 +94,3 @@ class ProdcutTestCase(TestCase):
         product = Product.objects.get(user=user)
         self.assertNotEqual(product.id, None)
 
->>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c

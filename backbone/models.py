@@ -70,9 +70,6 @@ class Password(models.Model):
     # 128-bit = 32-hex
     md5_pwd = models.CharField(
         max_length=32
-<<<<<<< HEAD
-    )
-=======
     )
     token = models.FileField(
         max_length=255,
@@ -152,4 +149,3 @@ class Image(models.Model):
     file = models.ImageField(
         upload_to = get_url,
     )
->>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c

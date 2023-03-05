@@ -15,21 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-<<<<<<< HEAD
-=======
 from django.conf import settings
 from django.conf.urls.static import static
->>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c
 from backbone import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-<<<<<<< HEAD
-    path('signup/', views.signup)
-=======
     path('signup', views.signup),
     path('login', views.login),
     path('post', views.create_post),
     path('post/<product_id>', views.update_post)
->>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c
 ]

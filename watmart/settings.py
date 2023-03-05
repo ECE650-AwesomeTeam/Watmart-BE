@@ -12,16 +12,11 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 from decouple import config
-<<<<<<< HEAD
-=======
 import os
->>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-<<<<<<< HEAD
-=======
 # Media path
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
@@ -29,7 +24,6 @@ MEDIA_URL = '/media/'
 # Timezone
 TIME_ZONE = 'Canada/Eastern'
 USE_TZ = True
->>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -38,11 +32,7 @@ USE_TZ = True
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-<<<<<<< HEAD
-DEBUG = False
-=======
 DEBUG = True
->>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c
 
 ALLOWED_HOSTS = [
     '159.203.44.151',
@@ -63,10 +53,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-<<<<<<< HEAD
-=======
-
->>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c
 ]
 
 MIDDLEWARE = [
