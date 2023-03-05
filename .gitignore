@@ -1,6 +1,12 @@
 # config
 .env
 
+<<<<<<< HEAD
+=======
+# media
+media/
+
+>>>>>>> dc11c7c6e52fc6476912a179dbb55bf55670ac0c
 # Itell
 .idea
 
