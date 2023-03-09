@@ -52,9 +52,9 @@ def login(request):
             token = jwt.encode(b, 'secret', algorithm='HS256')
             a.token = token
             a.save()
-            return JsonResponse({'msg': 'Log in successfully', 'token': token})
+            return JsonResponse({'result': 'ok', 'data': {'msg': 'Log in successfully', 'token': token}})
         else:
-            return HttpResponse('User does not exist or the password does not match')
+            return JsonResponse({'result': 'fail', 'data': {'msg': 'User does not exist or the password does not match'}})
     return HttpResponseNotAllowed(['POST'])
 
 
