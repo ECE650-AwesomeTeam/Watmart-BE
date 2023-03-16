@@ -31,22 +31,19 @@ def signup(request):
         status = create_user(fname, lname, email, birthday, password,
                              gender, wat_id, occ, phone)
         if status == 1:
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'OK',
                     'msg': 'User created successfully!'
                 }
             )
         elif status == -1:
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'Failed',
                     'msg': 'Current email has already been registered.'
                 }
             )
         else:
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'Failed',
                     'msg': 'Mandatory fields are empty.'
                 }
@@ -67,8 +64,7 @@ def login(request):
             token = jwt.encode(b, 'secret', algorithm='HS256')
             a.token = token
             a.save()
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'OK',
                     'msg': 'Log in successfully',
                     'data': {
@@ -77,8 +73,7 @@ def login(request):
                 }
             )
         else:
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'Failed',
                     'msg': 'User does not exist or the password does not match'
                 }
@@ -99,8 +94,7 @@ def create_post(request):
 
         user = User.objects.filter(email=email)
         if not user.exists():
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'Failed',
                     'msg': 'User does not exist.'
                 }
@@ -127,7 +121,7 @@ def create_post(request):
                 'result': 'OK',
                 'msg': 'Post created successfully!',
                 'data': {
-                    'product_id': product.id
+                    'productID': product.id
                 }
             }
         )
@@ -140,8 +134,7 @@ def update_post(request, product_id):
     if request.method in ['POST', 'DELETE', 'GET']:
         product = Product.objects.filter(id=product_id)
         if not product.exists():
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'Failed',
                     'msg': 'Product does not exist.'
                 }
@@ -161,8 +154,7 @@ def update_post(request, product_id):
                 'category': product.category,
                 'images': img_urls
             }
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'OK',
                     'msg': 'Get successfully!',
                     'data': response
@@ -170,8 +162,7 @@ def update_post(request, product_id):
             )
         elif request.method == 'DELETE':
             product.delete()
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'OK',
                     'msg': 'Delete successfully!',
                 }
@@ -191,12 +182,11 @@ def update_post(request, product_id):
                     file=f
                 )
                 image.save()
-            return JsonResponse(
-                {
+            return JsonResponse({
                     'result': 'OK',
                     'msg': 'Update successfully!',
                     'data': {
-                        'prodcut_id': product.id
+                        'productID': product.id
                     }
                 }
             )
