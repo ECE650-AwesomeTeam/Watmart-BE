@@ -87,6 +87,7 @@ def create_post(request):
         files = request.FILES.getlist('img')
 
         email = request.POST.get('user')
+        token = request.POST.get('token')
         price = request.POST.get('price')
         title = request.POST.get('title')
         content = request.POST.get('content')
@@ -97,6 +98,13 @@ def create_post(request):
             return JsonResponse({
                     'result': 'Failed',
                     'msg': 'User does not exist.'
+                }
+            )
+        token_cmp = Password.objects.get(user_id=email).token
+        if token != token_cmp:
+            return JsonResponse({
+                    'result': 'Failed',
+                    'msg': 'Token does not match.'
                 }
             )
         user = user[0]
@@ -140,6 +148,7 @@ def update_post(request, product_id):
                 }
             )
         product = product[0]
+        # get a post by id
         if request.method == 'GET':
             imgs = Image.objects.filter(product=product)
             img_urls = [img.file for img in imgs]
@@ -160,6 +169,8 @@ def update_post(request, product_id):
                     'data': response
                 }
             )
+        # delete a post
+        # a problem is django cannot get any data from FE in DELETE method.
         elif request.method == 'DELETE':
             product.delete()
             return JsonResponse({
@@ -167,7 +178,17 @@ def update_post(request, product_id):
                     'msg': 'Delete successfully!',
                 }
             )
+        # update a post
         elif request.method == 'POST':
+            token = request.POST.get('token')
+            email = request.POST.get('user')
+            token_cmp = Password.objects.get(user_id=email).token
+            if token != token_cmp:
+                return JsonResponse({
+                        'result': 'Failed',
+                        'msg': 'Token does not match.'
+                    }
+                )
             files = request.FILES.getlist('img')
             product.price = request.POST.get('price')
             product.title = request.POST.get('title')
