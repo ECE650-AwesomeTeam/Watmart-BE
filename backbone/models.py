@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 import os
 
+
 # Create your models here.
 
 class User(models.Model):
@@ -57,6 +58,7 @@ class User(models.Model):
         blank=True,
         null=True
     )
+
 
 class Password(models.Model):
     user = models.OneToOneField(
@@ -132,8 +134,32 @@ class Product(models.Model):
     )
 
 
+class Order(models.Model):
+    id = models.AutoField(
+        primary_key=True
+    )
+    seller = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='seller',
+        default="")
+    buyer = models.ForeignKey(
+        'User',
+        on_delete=models.CASCADE,
+        related_name='buyer',
+        default="")
+    product = models.ForeignKey(
+        'Product',
+        on_delete=models.CASCADE
+    )
+    time = models.DateTimeField(
+        auto_now=True
+    )
+
+
 def get_url(instance, filename):
     return os.path.join(str(instance.product.id), filename)
+
 
 class Image(models.Model):
     id = models.AutoField(
@@ -144,5 +170,5 @@ class Image(models.Model):
         on_delete=models.CASCADE
     )
     file = models.ImageField(
-        upload_to = get_url,
+        upload_to=get_url,
     )
