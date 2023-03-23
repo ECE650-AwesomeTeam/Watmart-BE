@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404
 from django.http import HttpResponseServerError, JsonResponse
 from django.http import HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
@@ -84,22 +86,16 @@ def login(request):
 @csrf_exempt
 def create_post(request):
     if request.method == 'POST':
-        files = request.FILES.getlist('img')
+        token = request.META.get("HTTP_TOKEN")
+        email = request.META.get("HTTP_EMAIL")
 
-        email = request.POST.get('user')
-        token = request.POST.get('token')
+        files = request.FILES.getlist('img')
         price = request.POST.get('price')
         title = request.POST.get('title')
         content = request.POST.get('content')
         category = request.POST.get('category')
 
-        user = User.objects.filter(email=email)
-        if not user.exists():
-            return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'User does not exist.'
-                }
-            )
+        user = get_object_or_404(User, email=email)
         token_cmp = Password.objects.get(user_id=email).token
         if token != token_cmp:
             return JsonResponse({
@@ -107,7 +103,6 @@ def create_post(request):
                     'msg': 'Token does not match.'
                 }
             )
-        user = user[0]
         product = Product(
             user=user,
             price=price,
@@ -140,14 +135,7 @@ def create_post(request):
 @csrf_exempt
 def update_post(request, product_id):
     if request.method in ['POST', 'DELETE', 'GET']:
-        product = Product.objects.filter(id=product_id)
-        if not product.exists():
-            return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'Product does not exist.'
-                }
-            )
-        product = product[0]
+        product = get_object_or_404(Product, id=product_id)
         # get a post by id
         if request.method == 'GET':
             imgs = Image.objects.filter(product=product)
@@ -172,6 +160,8 @@ def update_post(request, product_id):
         # delete a post
         # a problem is django cannot get any data from FE in DELETE method.
         elif request.method == 'DELETE':
+            token = request.META.get("HTTP_TOKEN")
+            email = request.META.get("HTTP_EMAIL")
             product.delete()
             return JsonResponse({
                     'result': 'OK',
@@ -180,9 +170,9 @@ def update_post(request, product_id):
             )
         # update a post
         elif request.method == 'POST':
-            token = request.POST.get('token')
-            email = request.POST.get('user')
-            token_cmp = Password.objects.get(user_id=email).token
+            token = request.META.get("HTTP_TOKEN")
+            email = request.META.get("HTTP_EMAIL")
+            token_cmp = get_object_or_404(Password, user_id=email).token
             if token != token_cmp:
                 return JsonResponse({
                         'result': 'Failed',
