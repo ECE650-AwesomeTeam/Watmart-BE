@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.urls import re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from backbone import views
@@ -24,5 +25,6 @@ urlpatterns = [
     path('signup', views.signup),
     path('login', views.login),
     path('post', views.create_post),
-    path('post/<product_id>', views.update_post)
+    path('post/<product_id>', views.update_post),
+    re_path(r'^post/$', views.get_post)
 ]
