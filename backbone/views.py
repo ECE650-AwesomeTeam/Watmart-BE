@@ -133,14 +133,37 @@ def create_post(request):
 
 
 @csrf_exempt
-def update_post(request, product_id):
-    if request.method in ['POST', 'DELETE', 'GET']:
-        product = get_object_or_404(Product, id=product_id)
-        # get a post by id
-        if request.method == 'GET':
+def get_post(request):
+    if request.method == 'GET':
+        post_id = request.GET.get('id')
+        category = request.GET.get('category')
+        min_price = request.GET.get('min_price')
+        max_price = request.GET.get('max_price')
+
+        filters = {}
+        if post_id:
+            filters['id'] = post_id
+        if category:
+            filters['category'] = category
+        if min_price:
+            filters['price__gte'] = min_price
+        if max_price:
+            filters['price__lte'] = max_price
+        
+        products = Product.objects.filter(**filters)
+        if not products.exists():
+            return JsonResponse(
+                {
+                    'result': 'Failed',
+                    'msg': 'Not found'
+                }
+            )
+        
+        res = []
+        for product in products:
             imgs = Image.objects.filter(product=product)
-            img_urls = [img.file for img in imgs]
-            response = {
+            img_urls = [str(img.file) for img in imgs]
+            data = {
                 'id': product.id,
                 'user': product.user.email,
                 'time': product.time.strftime('%Y-%m-%d %H:%M'),
@@ -151,17 +174,34 @@ def update_post(request, product_id):
                 'category': product.category,
                 'images': img_urls
             }
+            res.append(data)
+        return JsonResponse({
+                'result': 'OK',
+                'msg': 'Get successfully!',
+                'data': {
+                    'postList': res
+                }
+            }
+        )
+    return HttpResponseNotAllowed(['GET'])
+
+
+@csrf_exempt
+def update_post(request, product_id):
+    if request.method in ['POST', 'DELETE']:
+        product = get_object_or_404(Product, id=product_id)
+        token = request.META.get("HTTP_TOKEN")
+        email = request.META.get("HTTP_EMAIL")
+        token_cmp = get_object_or_404(Password, user_id=email).token
+        if token != token_cmp:
             return JsonResponse({
-                    'result': 'OK',
-                    'msg': 'Get successfully!',
-                    'data': response
+                    'result': 'Failed',
+                    'msg': 'Token does not match.'
                 }
             )
         # delete a post
         # a problem is django cannot get any data from FE in DELETE method.
-        elif request.method == 'DELETE':
-            token = request.META.get("HTTP_TOKEN")
-            email = request.META.get("HTTP_EMAIL")
+        if request.method == 'DELETE':
             product.delete()
             return JsonResponse({
                     'result': 'OK',
@@ -170,15 +210,6 @@ def update_post(request, product_id):
             )
         # update a post
         elif request.method == 'POST':
-            token = request.META.get("HTTP_TOKEN")
-            email = request.META.get("HTTP_EMAIL")
-            token_cmp = get_object_or_404(Password, user_id=email).token
-            if token != token_cmp:
-                return JsonResponse({
-                        'result': 'Failed',
-                        'msg': 'Token does not match.'
-                    }
-                )
             files = request.FILES.getlist('img')
             product.price = request.POST.get('price')
             product.title = request.POST.get('title')
@@ -201,18 +232,10 @@ def update_post(request, product_id):
                     }
                 }
             )
-    else:
-        return HttpResponseNotAllowed(['POST', 'DELETE'])
+    return HttpResponseNotAllowed(['POST', 'DELETE'])
 
 
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
-    """Create a user entity in the database.
-
-    Returns:
-        1: create successfully
-        0: mandatory fields are empty
-        -1: pk exists
-    """
     if all([fname, lname, email, birthday, password]):
         if (User.objects.filter(email=email)):
             return -1
