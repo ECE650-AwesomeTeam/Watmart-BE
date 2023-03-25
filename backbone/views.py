@@ -179,7 +179,7 @@ def get_post(request):
                 'result': 'OK',
                 'msg': 'Get successfully!',
                 'data': {
-                    'post_list': res
+                    'postList': res
                 }
             }
         )
