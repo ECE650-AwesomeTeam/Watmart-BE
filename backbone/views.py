@@ -190,6 +190,54 @@ def get_post(request):
 
 
 @csrf_exempt
+def get_my_post(request):
+    if request.method == 'GET':
+        token = request.META.get("HTTP_TOKEN")
+        email = request.META.get("HTTP_EMAIL")
+        token_cmp = get_object_or_404(Password, user_id=email).token
+        if token != token_cmp:
+            return JsonResponse({
+                    'result': 'Failed',
+                    'msg': 'Token does not match.'
+                }
+            )
+        products = Product.objects.filter(user_id=email)
+        if not products.exists():
+            return JsonResponse(
+                {
+                    'result': 'Failed',
+                    'msg': 'Not found'
+                }
+            )
+        res = []
+        for product in products:
+            imgs = Image.objects.filter(product=product)
+            img_urls = [str(img.file) for img in imgs]
+            data = {
+                'id': product.id,
+                'user': product.user.email,
+                'time': product.time.strftime('%Y-%m-%d %H:%M'),
+                'price': product.price,
+                'status': product.status,
+                'title': product.title,
+                'content': product.content,
+                'category': product.category,
+                'quality': product.quality,
+                'images': img_urls
+            }
+            res.append(data)
+        return JsonResponse({
+                'result': 'OK',
+                'msg': 'Get successfully!',
+                'data': {
+                    'postList': res
+                }
+            }
+        )
+    return HttpResponseNotAllowed(['GET'])
+
+
+@csrf_exempt
 def update_post(request, product_id):
     if request.method in ['POST', 'DELETE']:
         product = get_object_or_404(Product, id=product_id)
