@@ -94,6 +94,7 @@ def create_post(request):
         title = request.POST.get('title')
         content = request.POST.get('content')
         category = request.POST.get('category')
+        quality = request.POST.get('quality')
 
         user = get_object_or_404(User, email=email)
         token_cmp = Password.objects.get(user_id=email).token
@@ -109,7 +110,8 @@ def create_post(request):
             title=title,
             content=content,
             status='Available',
-            category=category
+            category=category,
+            quality=quality
         )
         product.save()
 
@@ -172,6 +174,7 @@ def get_post(request):
                 'title': product.title,
                 'content': product.content,
                 'category': product.category,
+                'quality': product.quality,
                 'images': img_urls
             }
             res.append(data)
@@ -215,6 +218,7 @@ def update_post(request, product_id):
             product.title = request.POST.get('title')
             product.content = request.POST.get('content')
             product.category = request.POST.get('category')
+            product.quality = request.POST.get('quality')
             product.save()
             Image.objects.filter(product=product).delete()
             shutil.rmtree(os.path.join(settings.MEDIA_ROOT, product_id), ignore_errors=True)

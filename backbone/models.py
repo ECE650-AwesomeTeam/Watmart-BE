@@ -91,7 +91,7 @@ class Product(models.Model):
     CLOTHING = 'CLOT'
     BOOKS = 'BOOK'
     SPORTS = 'SPOR'
-    COLLECTIONS = 'COLL'
+    COLLECTIBLES = 'COLL'
     INSTRUMENTS = 'INTR'
     ACCESSORIES = 'ACCE'
     APPLIANCES = 'APPL'
@@ -101,10 +101,18 @@ class Product(models.Model):
         (CLOTHING, 'Clothing'),
         (BOOKS, 'Books'),
         (SPORTS, 'Sports'),
-        (COLLECTIONS, 'Collections'),
+        (COLLECTIBLES, 'Collectibles'),
         (INSTRUMENTS, 'Music Instruments'),
         (ACCESSORIES, 'Accessories'),
         (ACCESSORIES, 'Home Appliances'),
+    ]
+
+    # Enum for quality
+    NEW = 'N'
+    USED = 'U'
+    QUALITY_CHOICES= [
+        (NEW, 'New'),
+        (USED, 'Used')
     ]
 
     id = models.AutoField(
@@ -131,6 +139,10 @@ class Product(models.Model):
     category = models.CharField(
         max_length=4,
         choices=CATEGORY_CHOICES
+    )
+    quality = models.CharField(
+        max_length=1,
+        choices=QUALITY_CHOICES
     )
 
 
