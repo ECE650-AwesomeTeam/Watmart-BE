@@ -1,3 +1,5 @@
+import datetime
+
 from django.shortcuts import render
 from django.shortcuts import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -10,6 +12,7 @@ from backbone.models import User
 from backbone.models import Password
 from backbone.models import Product
 from backbone.models import Image
+from backbone.models import Order
 import json
 import shutil
 import os
@@ -285,6 +288,45 @@ def update_post(request, product_id):
                 }
             )
     return HttpResponseNotAllowed(['POST', 'DELETE'])
+
+
+def create_order(request):
+    if request.method == 'POST':
+        token = request.META.get("HTTP_TOKEN")
+        email = request.META.get("HTTP_EMAIL")
+
+        buyer = get_object_or_404(User, email=email)
+        seller = request.POST.get('buyer')
+        product = request.POST.get('product')
+
+        token_cmp = Password.objects.get(user_id=email).token
+        if token != token_cmp:
+            return JsonResponse({
+                    'result': 'Failed',
+                    'msg': 'Token does not match.'
+                }
+            )
+
+        order = Order(
+            seller=seller,
+            buyer=buyer,
+            product=product,
+            time=datetime.datetime.now(),
+            status='Available'
+        )
+        order.save()
+
+        return JsonResponse(
+            {
+                'result': 'OK',
+                'msg': 'Order created successfully!',
+                'data': {
+                    'orderID': order.id
+                }
+            }
+        )
+
+    return HttpResponseNotAllowed(['POST'])
 
 
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
