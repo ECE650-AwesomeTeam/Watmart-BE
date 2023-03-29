@@ -173,6 +173,11 @@ class Order(models.Model):
     time = models.DateTimeField(
         auto_now=True
     )
+    status = models.CharField(
+        max_length=1,
+        choices=STATUS_CHOICES,
+        default=""
+    )
 
 
 def get_url(instance, filename):

@@ -312,7 +312,7 @@ def create_order(request):
             buyer=buyer,
             product=product,
             time=datetime.datetime.now(),
-            status='Available'
+            status='Valid'
         )
         order.save()
 
@@ -354,7 +354,8 @@ def get_my_order(request):
                 'product': order.product,
                 'buyer': order.buyer,
                 'seller': order.seller,
-                'time': order.time
+                'time': order.time,
+                'status': order.status
             }
             res.append(data)
         return JsonResponse({
