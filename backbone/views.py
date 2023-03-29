@@ -329,6 +329,45 @@ def create_order(request):
     return HttpResponseNotAllowed(['POST'])
 
 
+def get_my_order(request):
+    if request.method == 'GET':
+        token = request.META.get("HTTP_TOKEN")
+        email = request.META.get("HTTP_EMAIL")
+        token_cmp = get_object_or_404(Password, user_id=email).token
+        if token != token_cmp:
+            return JsonResponse({
+                    'result': 'Failed',
+                    'msg': 'Token does not match.'
+                }
+            )
+        orders = Order.objects.filter(buyer_id=email)
+        if not orders.exists():
+            return JsonResponse(
+                {
+                    'result': 'Failed',
+                    'msg': 'Not found'
+                }
+            )
+        res = []
+        for order in orders:
+            data = {
+                'product': order.product,
+                'buyer': order.buyer,
+                'seller': order.seller,
+                'time': order.time
+            }
+            res.append(data)
+        return JsonResponse({
+                'result': 'OK',
+                'msg': 'Get successfully!',
+                'data': {
+                    'orderList': res
+                }
+            }
+        )
+    return HttpResponseNotAllowed(['GET'])
+
+
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
     if all([fname, lname, email, birthday, password]):
         if (User.objects.filter(email=email)):

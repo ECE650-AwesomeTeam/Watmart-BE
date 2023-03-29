@@ -147,6 +147,12 @@ class Product(models.Model):
 
 
 class Order(models.Model):
+    VALID = 'V'
+    CANCELLED = 'C'
+    STATUS_CHOICES = [
+        (VALID, 'Valid'),
+        (CANCELLED, 'Cancelled'),
+    ]
     id = models.AutoField(
         primary_key=True
     )
