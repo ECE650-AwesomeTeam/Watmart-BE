@@ -300,14 +300,17 @@ def update_post(request, product_id):
     return HttpResponseNotAllowed(['POST', 'DELETE'])
 
 
+@csrf_exempt
 def create_order(request):
     if request.method == 'POST':
         token = request.META.get("HTTP_TOKEN")
         email = request.META.get("HTTP_EMAIL")
 
         buyer = get_object_or_404(User, email=email)
-        seller = request.POST.get('buyer')
-        product = request.POST.get('product')
+        seller_email = request.POST.get('seller')
+        seller = get_object_or_404(User, email=seller_email)
+        product_id = request.POST.get('product')
+        product = get_object_or_404(Product, id=product_id)
 
         token_cmp = Password.objects.get(user_id=email).token
         if token != token_cmp:
@@ -339,6 +342,7 @@ def create_order(request):
     return HttpResponseNotAllowed(['POST'])
 
 
+@csrf_exempt
 def get_my_order(request):
     if request.method == 'GET':
         token = request.META.get("HTTP_TOKEN")
@@ -361,9 +365,9 @@ def get_my_order(request):
         res = []
         for order in orders:
             data = {
-                'product': order.product,
-                'buyer': order.buyer,
-                'seller': order.seller,
+                'product': order.product_id,
+                'buyer': order.buyer_id,
+                'seller': order.seller_id,
                 'time': order.time,
                 'status': order.status
             }
@@ -377,6 +381,7 @@ def get_my_order(request):
             }
         )
     return HttpResponseNotAllowed(['GET'])
+
 
 
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
