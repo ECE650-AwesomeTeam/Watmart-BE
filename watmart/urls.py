@@ -29,6 +29,7 @@ urlpatterns = [
     path('post/<product_id>', views.update_post),
     path('mypost', views.get_my_post),
     path('order', views.create_order),
+    path('order/<order_id>', views.update_order),
     path('myorder', views.get_my_order),
     re_path(r'^post/$', views.get_post),
     re_path(r'^media/(?P<path>.*)', serve, {'document_root': settings.MEDIA_ROOT})

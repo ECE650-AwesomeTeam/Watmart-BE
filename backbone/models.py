@@ -160,7 +160,8 @@ class Order(models.Model):
         'User',
         on_delete=models.CASCADE,
         related_name='seller',
-        default="")
+        default=""
+    )
     buyer = models.ForeignKey(
         'User',
         on_delete=models.CASCADE,
@@ -177,6 +178,11 @@ class Order(models.Model):
         max_length=1,
         choices=STATUS_CHOICES,
         default=""
+    )
+    note = models.CharField(
+        max_length=1000,
+        default="",
+        null=True
     )
 
 
