@@ -13,6 +13,7 @@ from backbone.models import Password
 from backbone.models import Product
 from backbone.models import Image
 from backbone.models import Order
+from django.db.models import Q
 import json
 import shutil
 import os
@@ -135,6 +136,54 @@ def create_post(request):
         )
 
     return HttpResponseNotAllowed(['POST'])
+
+
+@csrf_exempt
+def search_post(request):
+    if request.method == 'GET':
+        keyword = request.GET.get('keyword')
+        category = request.GET.get('category')
+
+        filters = {}
+        if category:
+            filters['category'] = category
+        products = Product.objects.filter(
+            Q(title__contains=keyword) | Q(content__contains=keyword),
+            **filters
+        )
+        if not products.exists():
+            return JsonResponse(
+                {
+                    'result': 'Failed',
+                    'msg': 'Not found'
+                }
+            )
+        res = []
+        for product in products:
+            imgs = Image.objects.filter(product=product)
+            img_urls = [str(img.file) for img in imgs]
+            data = {
+                'id': product.id,
+                'user': product.user.email,
+                'time': product.time.strftime('%Y-%m-%d %H:%M'),
+                'price': product.price,
+                'status': product.status,
+                'title': product.title,
+                'content': product.content,
+                'category': product.category,
+                'quality': product.quality,
+                'images': img_urls
+            }
+            res.append(data)
+        return JsonResponse({
+                'result': 'OK',
+                'msg': 'Get successfully!',
+                'data': {
+                    'postList': res
+                }
+            }
+        )
+    return HttpResponseNotAllowed(['GET'])
 
 
 @csrf_exempt
