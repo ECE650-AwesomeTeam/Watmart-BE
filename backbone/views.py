@@ -253,8 +253,10 @@ def update_post(request, product_id):
     if request.method in ['POST', 'DELETE']:
         product = get_object_or_404(Product, id=product_id)
         token = request.META.get("HTTP_TOKEN")
-        email = request.META.get("HTTP_EMAIL")
+        email = product.user_id
         token_cmp = get_object_or_404(Password, user_id=email).token
+        print(token_cmp)
+        print(token)
         if token != token_cmp:
             return JsonResponse({
                     'result': 'Failed',
