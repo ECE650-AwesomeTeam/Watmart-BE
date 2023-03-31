@@ -13,6 +13,7 @@ from backbone.models import Password
 from backbone.models import Product
 from backbone.models import Image
 from backbone.models import Order
+from django.db.models import Q
 import json
 import shutil
 import os
@@ -144,6 +145,7 @@ def get_post(request):
         category = request.GET.get('category')
         min_price = request.GET.get('min_price')
         max_price = request.GET.get('max_price')
+        keyword = request.GET.get('keyword')
 
         filters = {}
         if post_id:
@@ -153,9 +155,15 @@ def get_post(request):
         if min_price:
             filters['price__gte'] = min_price
         if max_price:
-            filters['price__lte'] = max_price
-        
-        products = Product.objects.filter(**filters)
+            filters['price__lte'] = max_price\
+
+        if keyword:
+            products = Product.objects.filter(
+                Q(title__contains=keyword) | Q(content__contains=keyword),
+                **filters
+            )
+        else:
+            products = Product.objects.filter(**filters)
         if not products.exists():
             return JsonResponse(
                 {
