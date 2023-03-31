@@ -38,21 +38,21 @@ def signup(request):
                              gender, wat_id, occ, phone)
         if status == 1:
             return JsonResponse({
-                    'result': 'OK',
-                    'msg': 'User created successfully!'
-                }
+                'result': 'OK',
+                'msg': 'User created successfully!'
+            }
             )
         elif status == -1:
             return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'Current email has already been registered.'
-                }
+                'result': 'Failed',
+                'msg': 'Current email has already been registered.'
+            }
             )
         else:
             return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'Mandatory fields are empty.'
-                }
+                'result': 'Failed',
+                'msg': 'Mandatory fields are empty.'
+            }
             )
     return HttpResponseNotAllowed(['POST'])
 
@@ -71,18 +71,18 @@ def login(request):
             a.token = token
             a.save()
             return JsonResponse({
-                    'result': 'OK',
-                    'msg': 'Log in successfully',
-                    'data': {
-                        'token': token
-                    }
+                'result': 'OK',
+                'msg': 'Log in successfully',
+                'data': {
+                    'token': token
                 }
+            }
             )
         else:
             return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'User does not exist or the password does not match'
-                }
+                'result': 'Failed',
+                'msg': 'User does not exist or the password does not match'
+            }
             )
     return HttpResponseNotAllowed(['POST'])
 
@@ -104,9 +104,9 @@ def create_post(request):
         token_cmp = Password.objects.get(user_id=email).token
         if token != token_cmp:
             return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'Token does not match.'
-                }
+                'result': 'Failed',
+                'msg': 'Token does not match.'
+            }
             )
         product = Product(
             user=user,
@@ -155,7 +155,7 @@ def get_post(request):
         if min_price:
             filters['price__gte'] = min_price
         if max_price:
-            filters['price__lte'] = max_price\
+            filters['price__lte'] = max_price
 
         if keyword:
             products = Product.objects.filter(
@@ -171,7 +171,7 @@ def get_post(request):
                     'msg': 'Not found'
                 }
             )
-        
+
         res = []
         for product in products:
             imgs = Image.objects.filter(product=product)
@@ -190,12 +190,12 @@ def get_post(request):
             }
             res.append(data)
         return JsonResponse({
-                'result': 'OK',
-                'msg': 'Get successfully!',
-                'data': {
-                    'postList': res
-                }
+            'result': 'OK',
+            'msg': 'Get successfully!',
+            'data': {
+                'postList': res
             }
+        }
         )
     return HttpResponseNotAllowed(['GET'])
 
@@ -208,9 +208,9 @@ def get_my_post(request):
         token_cmp = get_object_or_404(Password, user_id=email).token
         if token != token_cmp:
             return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'Token does not match.'
-                }
+                'result': 'Failed',
+                'msg': 'Token does not match.'
+            }
             )
         products = Product.objects.filter(user_id=email)
         if not products.exists():
@@ -238,12 +238,12 @@ def get_my_post(request):
             }
             res.append(data)
         return JsonResponse({
-                'result': 'OK',
-                'msg': 'Get successfully!',
-                'data': {
-                    'postList': res
-                }
+            'result': 'OK',
+            'msg': 'Get successfully!',
+            'data': {
+                'postList': res
             }
+        }
         )
     return HttpResponseNotAllowed(['GET'])
 
@@ -259,18 +259,18 @@ def update_post(request, product_id):
         print(token)
         if token != token_cmp:
             return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'Token does not match.'
-                }
+                'result': 'Failed',
+                'msg': 'Token does not match.'
+            }
             )
         # delete a post
         # a problem is django cannot get any data from FE in DELETE method.
         if request.method == 'DELETE':
             product.delete()
             return JsonResponse({
-                    'result': 'OK',
-                    'msg': 'Delete successfully!',
-                }
+                'result': 'OK',
+                'msg': 'Delete successfully!',
+            }
             )
         # update a post
         elif request.method == 'POST':
@@ -290,12 +290,12 @@ def update_post(request, product_id):
                 )
                 image.save()
             return JsonResponse({
-                    'result': 'OK',
-                    'msg': 'Update successfully!',
-                    'data': {
-                        'productID': product.id
-                    }
+                'result': 'OK',
+                'msg': 'Update successfully!',
+                'data': {
+                    'productID': product.id
                 }
+            }
             )
     return HttpResponseNotAllowed(['POST', 'DELETE'])
 
@@ -311,13 +311,14 @@ def create_order(request):
         seller = get_object_or_404(User, email=seller_email)
         product_id = request.POST.get('product')
         product = get_object_or_404(Product, id=product_id)
+        note = request.POST.get('note')
 
         token_cmp = Password.objects.get(user_id=email).token
         if token != token_cmp:
             return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'Token does not match.'
-                }
+                'result': 'Failed',
+                'msg': 'Token does not match.'
+            }
             )
 
         order = Order(
@@ -325,7 +326,8 @@ def create_order(request):
             buyer=buyer,
             product=product,
             time=datetime.datetime.now(),
-            status='Valid'
+            status='Valid',
+            note=note
         )
         order.save()
 
@@ -350,9 +352,9 @@ def get_my_order(request):
         token_cmp = get_object_or_404(Password, user_id=email).token
         if token != token_cmp:
             return JsonResponse({
-                    'result': 'Failed',
-                    'msg': 'Token does not match.'
-                }
+                'result': 'Failed',
+                'msg': 'Token does not match.'
+            }
             )
         orders = Order.objects.filter(buyer_id=email)
         if not orders.exists():
@@ -364,24 +366,65 @@ def get_my_order(request):
             )
         res = []
         for order in orders:
+            product = get_object_or_404(Product, id=order.product_id)
+            imgs = Image.objects.filter(product=product)
+            img_urls = [str(img.file) for img in imgs]
             data = {
-                'product': order.product_id,
+                'id': order.id,
+                'product': product.id,
+                'title': product.title,
+                'description': product.content,
+                'price': product.price,
+                'category': product.category,
+                'quality': product.quality,
+                'images': img_urls,
                 'buyer': order.buyer_id,
                 'seller': order.seller_id,
                 'time': order.time,
-                'status': order.status
+                'status': order.status,
+                'note': order.note
             }
             res.append(data)
         return JsonResponse({
-                'result': 'OK',
-                'msg': 'Get successfully!',
-                'data': {
-                    'orderList': res
-                }
+            'result': 'OK',
+            'msg': 'Get successfully!',
+            'data': {
+                'orderList': res
             }
+        }
         )
     return HttpResponseNotAllowed(['GET'])
 
+@csrf_exempt
+def update_order(request, order_id):
+    if request.method == 'POST':
+        order = get_object_or_404(Order, id=order_id)
+        token = request.META.get("HTTP_TOKEN")
+        email = request.META.get("HTTP_EMAIL")
+        status = request.POST.get('status')
+
+        token_cmp = Password.objects.get(user_id=email).token
+        if token != token_cmp:
+            return JsonResponse({
+                'result': 'Failed',
+                'msg': 'Token does not match.'
+            }
+            )
+
+        order.status = status
+        order.save()
+
+        return JsonResponse(
+            {
+                'result': 'OK',
+                'msg': 'Order cancelled successfully!',
+                'data': {
+                    'orderID': order.id
+                }
+            }
+        )
+
+    return HttpResponseNotAllowed(['POST'])
 
 
 def create_user(fname, lname, email, birthday, password, gender, wat_id, occ, phone):
