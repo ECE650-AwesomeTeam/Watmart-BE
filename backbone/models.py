@@ -102,9 +102,9 @@ class Product(models.Model):
         (BOOKS, 'Books'),
         (SPORTS, 'Sports'),
         (COLLECTIBLES, 'Collectibles'),
-        (INSTRUMENTS, 'Music Instruments'),
+        (INSTRUMENTS, 'Instruments'),
         (ACCESSORIES, 'Accessories'),
-        (ACCESSORIES, 'Home Appliances'),
+        (ACCESSORIES, 'Appliances'),
     ]
 
     # Enum for quality
