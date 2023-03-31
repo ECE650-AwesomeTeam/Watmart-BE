@@ -139,60 +139,13 @@ def create_post(request):
 
 
 @csrf_exempt
-def search_post(request):
-    if request.method == 'GET':
-        keyword = request.GET.get('keyword')
-        category = request.GET.get('category')
-
-        filters = {}
-        if category:
-            filters['category'] = category
-        products = Product.objects.filter(
-            Q(title__contains=keyword) | Q(content__contains=keyword),
-            **filters
-        )
-        if not products.exists():
-            return JsonResponse(
-                {
-                    'result': 'Failed',
-                    'msg': 'Not found'
-                }
-            )
-        res = []
-        for product in products:
-            imgs = Image.objects.filter(product=product)
-            img_urls = [str(img.file) for img in imgs]
-            data = {
-                'id': product.id,
-                'user': product.user.email,
-                'time': product.time.strftime('%Y-%m-%d %H:%M'),
-                'price': product.price,
-                'status': product.status,
-                'title': product.title,
-                'content': product.content,
-                'category': product.category,
-                'quality': product.quality,
-                'images': img_urls
-            }
-            res.append(data)
-        return JsonResponse({
-                'result': 'OK',
-                'msg': 'Get successfully!',
-                'data': {
-                    'postList': res
-                }
-            }
-        )
-    return HttpResponseNotAllowed(['GET'])
-
-
-@csrf_exempt
 def get_post(request):
     if request.method == 'GET':
         post_id = request.GET.get('id')
         category = request.GET.get('category')
         min_price = request.GET.get('min_price')
         max_price = request.GET.get('max_price')
+        keyword = request.GET.get('keyword')
 
         filters = {}
         if post_id:
@@ -202,9 +155,15 @@ def get_post(request):
         if min_price:
             filters['price__gte'] = min_price
         if max_price:
-            filters['price__lte'] = max_price
-        
-        products = Product.objects.filter(**filters)
+            filters['price__lte'] = max_price\
+
+        if keyword:
+            products = Product.objects.filter(
+                Q(title__contains=keyword) | Q(content__contains=keyword),
+                **filters
+            )
+        else:
+            products = Product.objects.filter(**filters)
         if not products.exists():
             return JsonResponse(
                 {
