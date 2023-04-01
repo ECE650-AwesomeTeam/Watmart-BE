@@ -20,6 +20,14 @@ import os
 import jwt
 
 
+def parse_token(header):
+    auth_header = header.split()
+    if len(auth_header) == 2 and auth_header[0] == 'Bearer':
+        token = auth_header[1]
+    else:
+        token = auth_header[0]
+    return token
+
 @csrf_exempt
 def signup(request):
     if request.method == 'POST':
@@ -90,10 +98,10 @@ def login(request):
 @csrf_exempt
 def create_post(request):
     if request.method == 'POST':
-        token = request.META.get("HTTP_TOKEN")
-        email = request.META.get("HTTP_EMAIL")
-
+        token = parse_token(request.META.get("HTTP_AUTHORIZATION"))
+        
         files = request.FILES.getlist('img')
+        email = request.POST.get("email")
         price = request.POST.get('price')
         title = request.POST.get('title')
         content = request.POST.get('content')
@@ -203,8 +211,8 @@ def get_post(request):
 @csrf_exempt
 def get_my_post(request):
     if request.method == 'GET':
-        token = request.META.get("HTTP_TOKEN")
-        email = request.META.get("HTTP_EMAIL")
+        token = parse_token(request.META.get("HTTP_AUTHORIZATION"))
+        email = request.GET.get("email")
         token_cmp = get_object_or_404(Password, user_id=email).token
         if token != token_cmp:
             return JsonResponse({
@@ -252,11 +260,9 @@ def get_my_post(request):
 def update_post(request, product_id):
     if request.method in ['POST', 'DELETE']:
         product = get_object_or_404(Product, id=product_id)
-        token = request.META.get("HTTP_TOKEN")
+        token = parse_token(request.META.get("HTTP_AUTHORIZATION"))
         email = product.user_id
         token_cmp = get_object_or_404(Password, user_id=email).token
-        print(token_cmp)
-        print(token)
         if token != token_cmp:
             return JsonResponse({
                 'result': 'Failed',
@@ -303,8 +309,8 @@ def update_post(request, product_id):
 @csrf_exempt
 def create_order(request):
     if request.method == 'POST':
-        token = request.META.get("HTTP_TOKEN")
-        email = request.META.get("HTTP_EMAIL")
+        token = parse_token(request.META.get("HTTP_AUTHORIZATION"))
+        email = request.POST.get("email")
 
         buyer = get_object_or_404(User, email=email)
         seller_email = request.POST.get('seller')
@@ -347,8 +353,8 @@ def create_order(request):
 @csrf_exempt
 def get_my_order(request):
     if request.method == 'GET':
-        token = request.META.get("HTTP_TOKEN")
-        email = request.META.get("HTTP_EMAIL")
+        token = parse_token(request.META.get("HTTP_AUTHORIZATION"))
+        email = request.GET.get("email")
         token_cmp = get_object_or_404(Password, user_id=email).token
         if token != token_cmp:
             return JsonResponse({
@@ -399,8 +405,8 @@ def get_my_order(request):
 def update_order(request, order_id):
     if request.method == 'POST':
         order = get_object_or_404(Order, id=order_id)
-        token = request.META.get("HTTP_TOKEN")
-        email = request.META.get("HTTP_EMAIL")
+        token = parse_token(request.META.get("HTTP_AUTHORIZATION"))
+        email = order.buyer_id
         status = request.POST.get('status')
 
         token_cmp = Password.objects.get(user_id=email).token
