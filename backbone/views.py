@@ -28,6 +28,7 @@ def parse_token(header):
         token = auth_header[0]
     return token
 
+
 @csrf_exempt
 def signup(request):
     if request.method == 'POST':
@@ -99,7 +100,7 @@ def login(request):
 def create_post(request):
     if request.method == 'POST':
         token = parse_token(request.META.get("HTTP_AUTHORIZATION"))
-        
+
         files = request.FILES.getlist('img')
         email = request.POST.get("email")
         price = request.POST.get('price')
@@ -362,8 +363,9 @@ def get_my_order(request):
                 'msg': 'Token does not match.'
             }
             )
-        orders = Order.objects.filter(buyer_id=email)
-        if not orders.exists():
+        orders_as_buyer = Order.objects.filter(buyer_id=email)
+        orders_as_seller = Order.objects.filter(seller_id=email)
+        if not orders_as_buyer.exists() and not orders_as_seller.exists():
             return JsonResponse(
                 {
                     'result': 'Failed',
@@ -371,11 +373,34 @@ def get_my_order(request):
                 }
             )
         res = []
-        for order in orders:
+        for order in orders_as_buyer:
             product = get_object_or_404(Product, id=order.product_id)
             imgs = Image.objects.filter(product=product)
             img_urls = [str(img.file) for img in imgs]
             data = {
+                'type': "buyer order",
+                'id': order.id,
+                'product': product.id,
+                'title': product.title,
+                'description': product.content,
+                'price': product.price,
+                'category': product.category,
+                'quality': product.quality,
+                'images': img_urls,
+                'buyer': order.buyer_id,
+                'seller': order.seller_id,
+                'time': order.time,
+                'status': order.status,
+                'note': order.note
+            }
+            res.append(data)
+
+        for order in orders_as_seller:
+            product = get_object_or_404(Product, id=order.product_id)
+            imgs = Image.objects.filter(product=product)
+            img_urls = [str(img.file) for img in imgs]
+            data = {
+                'type': "seller order",
                 'id': order.id,
                 'product': product.id,
                 'title': product.title,
@@ -400,6 +425,7 @@ def get_my_order(request):
         }
         )
     return HttpResponseNotAllowed(['GET'])
+
 
 @csrf_exempt
 def update_order(request, order_id):
