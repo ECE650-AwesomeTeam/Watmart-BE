@@ -79,9 +79,11 @@ class Password(models.Model):
 class Product(models.Model):
     # Enum for status
     AVAILABLE = 'A'
+    PENDING = 'P'
     SOLD = 'S'
     STATUS_CHOICES = [
         (AVAILABLE, 'Available'),
+        (PENDING, 'Pending'),
         (SOLD, 'Sold'),
     ]
 

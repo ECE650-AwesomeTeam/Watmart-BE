@@ -328,6 +328,14 @@ def create_order(request):
             }
             )
 
+        ordered = Product.objects.filter(id=product.id)
+        if ordered:
+            return JsonResponse({
+                'result': 'Failed',
+                'msg': 'You have already placed this order!'
+            }
+            )
+
         order = Order(
             seller=seller,
             buyer=buyer,
@@ -337,6 +345,8 @@ def create_order(request):
             note=note
         )
         order.save()
+        product.status = "Pending"
+        product.save()
 
         return JsonResponse(
             {
