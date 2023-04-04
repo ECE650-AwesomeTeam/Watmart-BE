@@ -328,7 +328,7 @@ def create_order(request):
             }
             )
 
-        ordered = Product.objects.filter(id=product.id)
+        ordered = Order.objects.filter(product_id=product.id)
         if ordered:
             return JsonResponse({
                 'result': 'Failed',
