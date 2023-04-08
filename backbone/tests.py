@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from backbone.models import User
 from backbone.models import Password
 from backbone.models import Product
+from backbone.models import Order 
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
@@ -461,3 +462,236 @@ class UpdatePostTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['result'], 'Failed')
         self.assertEqual(response.json()['msg'], 'Token does not match.')
+
+
+class CreateOrderTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.buyer = User.objects.create(
+            email='testbuyer@example.com',
+            fname='John',
+            lname='Doe',
+            birthday='2000-01-01',
+            gender='Male',
+            wat_id='1231231234',
+            occupation='Student',
+            phone='1231231234'
+        )
+        self.seller = User.objects.create(
+            email='testseller@example.com',
+            fname='John',
+            lname='Doe',
+            birthday='2000-01-01',
+            gender='Male',
+            wat_id='1231231234',
+            occupation='Student',
+            phone='1231231234'
+        )
+        self.product = Product.objects.create(
+            user=self.seller,
+            price="100",
+            status="available",
+            title="Test Product",
+            content="This is a test product",
+            category="test",
+            quality="new"
+        )
+        self.password = Password.objects.create(
+            user=self.buyer,
+            token="testtoken"
+        )
+        self.url = '/order'
+
+    def test_create_order(self):
+        # Send POST request to create order
+        data = {
+            'email': self.buyer.email,
+            'seller': self.seller.email,
+            'product': self.product.id,
+            'note': 'This is a test order'
+        }
+        response = self.client.post(
+            self.url,
+            data,
+            format='json',
+            HTTP_AUTHORIZATION=f'Bearer {self.password.token}'
+        )
+
+        # Check that the order was created
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['result'], 'OK')
+        self.assertEqual(response.json()['msg'], 'Order created successfully!')
+        self.assertEqual(response.json()['data']['orderID'], Order.objects.latest('id').id)
+
+        # Check that the product status was updated to "Pending"
+        updated_product = Product.objects.get(id=self.product.id)
+        self.assertEqual(updated_product.status, "Pending")
+
+        # Check that the order details are correct
+        order = Order.objects.get(product=self.product)
+        self.assertEqual(order.buyer, self.buyer)
+        self.assertEqual(order.seller, self.seller)
+        self.assertEqual(order.product, self.product)
+        self.assertEqual(order.note, data['note'])
+
+    def test_create_duplicate_order(self):
+        # Create an order for the same product
+        Order.objects.create(
+            seller=self.seller,
+            buyer=self.buyer,
+            product=self.product,
+            status='Valid'
+        )
+
+        # Send POST request to create order
+        data = {
+            'email': self.buyer.email,
+            'seller': self.seller.email,
+            'product': self.product.id,
+            'note': 'This is a test order'
+        }
+        response = self.client.post(
+            self.url,
+            data,
+            format='json',
+            HTTP_AUTHORIZATION=f'Bearer {self.password.token}'
+        )
+
+        # Check that the order was not created
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['result'], 'Failed')
+        self.assertEqual(response.json()['msg'], 'You have already placed this order!')
+
+    def test_unauthorized(self):
+        # Send POST request without token
+        data = {
+            'email': self.buyer.email,
+            'seller': self.seller.email,
+            'product': self.product.id,
+            'note': 'This is a test order'
+        }
+        response = self.client.post(
+            self.url,
+            data,
+            format='json',
+            HTTP_AUTHORIZATION=f'Bearer ???'
+        )
+
+        # Check that the request is unauthorized
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['result'], 'Failed')
+        self.assertEqual(response.json()['msg'], 'Token does not match.')
+
+
+class GetMyOrderTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create(
+            email='testuser@example.com',
+            fname='John',
+            lname='Doe',
+            birthday='2000-01-01',
+            gender='Male',
+            wat_id='1231231234',
+            occupation='Student',
+            phone='1231231234'
+        )
+        self.password = Password.objects.create(
+            user=self.user,
+            token="testtoken"
+        )
+        self.token = self.password.token
+        self.product = Product.objects.create(
+            user_id = self.user.email,
+            title='Test Product',
+            content='Test Product Description',
+            price=10.0,
+            category='test category',
+            quality='test quality'
+        )
+
+    def test_get_my_order_failed(self):
+        url = '/myorder/?email=testuser@example.com'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.json().get('result'), 'Failed')
+        self.assertEqual(response.json().get('msg'), 'Not found')
+
+    def test_get_my_order(self):
+        url = '/myorder/?email=testuser@example.com'
+        self.order = Order.objects.create(
+            buyer=self.user,
+            seller=self.user,
+            product=self.product,
+            status='Valid',
+            note='Test Order Note'
+        )
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json().get('data').get('orderList')), 2)
+        order = response.json().get('data').get('orderList')[0]
+        self.assertEqual(order.get('type'), 'buyer order')
+        self.assertEqual(order.get('id'), self.order.id)
+        self.assertEqual(order.get('product'), self.product.id)
+        self.assertEqual(order.get('title'), self.product.title)
+        self.assertEqual(order.get('description'), self.product.content)
+        self.assertEqual(order.get('price'), self.product.price)
+        self.assertEqual(order.get('category'), self.product.category)
+        self.assertEqual(order.get('quality'), self.product.quality)
+        self.assertEqual(order.get('buyer'), str(self.user.email))
+        self.assertEqual(order.get('seller'), str(self.user.email))
+        self.assertEqual(order.get('status'), self.order.status)
+        self.assertEqual(order.get('note'), self.order.note)
+
+    def test_get_my_order_unauthorized(self):
+        url = '/myorder/?email=testuser@example.com'
+        response = self.client.get(url, HTTP_AUTHORIZATION=f'Bearer ???')
+        self.assertEqual(response.json()['result'], 'Failed')
+        self.assertEqual(response.json()['msg'], 'Token does not match.')
+
+
+class TestUpdateOrder(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user1 = User.objects.create(
+            email='user1@example.com',
+            fname='John',
+            lname='Doe',
+            birthday='2000-01-01',
+            gender='Male',
+            wat_id='1231231234',
+            occupation='Student',
+            phone='1231231234'
+        )
+        self.user2 = User.objects.create(
+            email='user2@example.com',
+            fname='John',
+            lname='Doe',
+            birthday='2000-01-01',
+            gender='Male',
+            wat_id='1231231234',
+            occupation='Student',
+            phone='1231231234'
+        )
+        self.password1 = Password.objects.create(user=self.user1, token='token1')
+        self.password2 = Password.objects.create(user=self.user2, token='token2')
+        self.product = Product.objects.create(
+            user_id=self.user1.email,
+            title='product1', 
+            content='content1', 
+            price=10, 
+            category='category1', 
+            quality='new', 
+            status='available')
+        self.order = Order.objects.create(seller=self.user1, buyer=self.user2, product=self.product, time='2023-04-06 12:00:00', status='valid', note='note1')
+        self.order_url = f'/order/{self.order.id}'
+
+    def test_update_order(self):
+        data = {'status': 'cancelled'}
+        response = self.client.post(self.order_url, data, HTTP_AUTHORIZATION='Bearer token2')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Order.objects.get(id=self.order.id).status, 'cancelled')
+
+    def test_update_order_with_invalid_token(self):
+        data = {'status': 'cancelled'}
+        response = self.client.post(self.order_url, data, HTTP_AUTHORIZATION='Bearer invalid_token')
+        self.assertEqual(Order.objects.get(id=self.order.id).status, 'valid')

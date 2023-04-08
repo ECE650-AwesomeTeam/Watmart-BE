@@ -22,11 +22,10 @@ import jwt
 
 def parse_token(header):
     auth_header = header.split()
+    token = auth_header[0]
     if len(auth_header) == 2 and auth_header[0] == 'Bearer':
         token = auth_header[1]
-    else:
-        token = auth_header[0]
-    return token
+    return auth_header[1]
 
 
 @csrf_exempt

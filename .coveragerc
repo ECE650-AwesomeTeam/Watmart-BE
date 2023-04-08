@@ -2,4 +2,4 @@
 branch = True
 
 [report]
-show_missing = True
+show_missing = False
