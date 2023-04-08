@@ -10,3 +10,4 @@ media/
 # misc
 .DS_Stores
 __pycache__
+.coverage
